@@ -1,0 +1,132 @@
+:root {
+  /* Figma DESKTOP PORTAL semantic tokens (synced Aug 2026) */
+  --spacing-2xs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 40px;
+  --spacing-none: 0;
+
+  --border-width-thin: 1px;
+
+  /* Action — generic primary (Login, Pay, tabs) */
+  --action-primary-bg: #0b66c3;
+  --action-primary-bg-hover: #0958a8;
+  --action-primary-bg-active: #084a8f;
+  --action-primary-bg-disabled: #f2f2f5;
+  --action-primary-bg-subtle: #edf4ff;
+  --action-primary-text: #ffffff;
+  --action-primary-text-disabled: #d3d4db;
+  --action-primary-border: #0b66c3;
+
+  /* Action — brand green (product / vendor CTAs) */
+  --action-brand-primary-bg: #129136;
+  --action-brand-primary-bg-hover: #0f7a2e;
+  --action-brand-primary-text: #ffffff;
+  --action-brand-primary-border: #129136;
+
+  /* Disabled primary — neutral gray (paired with action blue, not brand green) */
+  --action-disabled-bg: #f2f2f5;
+  --action-disabled-text: #d3d4db;
+
+  --action-destructive-bg: #dc2626;
+  --action-destructive-border: #dc2626;
+  --action-destructive-text: #ffffff;
+
+  --action-secondary-text: #18181a;
+  --action-secondary-border: #d3d4db;
+  --action-ghost-bg: #ffffff;
+  --action-ghost-text: #60646c;
+
+  /* Text */
+  --text-primary: #18181a;
+  --text-secondary: #60646c;
+  --text-muted: #8b8d98;
+  --text-placeholder: #8b8d98;
+  --text-nav: #60646c;
+  --text-link: #0b66c3;
+  --text-soft: #8b8d98;
+  --text-inverse: #ffffff;
+  --text-on-primary: #ffffff;
+  --text-disabled: #d3d4db;
+
+  /* Surfaces */
+  --background-default: #ffffff;
+  --background-muted: #f9f9fb;
+  --background-subtle: #fcfcfd;
+  --input-bg: #ffffff;
+  --input-border: #d3d4db;
+  --input-border-focus: #3b82f6;
+  --input-text: #18181a;
+  --input-text-disabled: #d3d4db;
+  --input-bg-disabled: #fcfcfd;
+  --input-border-disabled: #ebebef;
+  --border-subtle: #f2f2f5;
+  --border-default: #d3d4db;
+  --border-strong: #b9bbc6;
+  --border-focus: #3b82f6;
+  --divider-default: #ebebef;
+  --divider-strong: #d3d4db;
+
+  /* Brand aliases */
+  --brand-blue: #001a56;
+  --brand-green: #129136;
+  --brand-green-alt: #12863e;
+  --navy: #020638;
+  /* Figma Side menu fill — Navy Blue */
+  --navy-blue: #042b5c;
+  --sidebar-nav-active-bg: #0b66c3;
+
+  /* Status */
+  --status-success-bg: #f5faf6;
+  --status-success-border: #8de7a7;
+  --status-success-text: #129136;
+  --status-success-accent: #1ac74b;
+  --status-warning-bg: #fff9e3;
+  --status-warning-border: #facc15;
+  --status-warning-text: #b96109;
+  --status-warning-icon: #d97706;
+  --status-info-bg: #edf4ff;
+  --status-info-border: #60a5fa;
+  --status-info-accent: #3b82f6;
+  --status-info-text: #2355cb;
+  --status-error-bg: #fff1f1;
+  --status-error-accent: #ef4444;
+  --status-error-text: #bd2323;
+  --status-error-border: #f87171;
+  --status-purple-bg: #f2f2f5;
+  --status-purple-accent: #042b5c;
+  --purple-50: #edf4ff;
+  --purple-100: #f2f2f5;
+  --purple-300: #93c5fd;
+  --purple-600: #042b5c;
+  --status-sage-bg: #e8f0e8;
+  --status-sage-accent: #3d6b4f;
+  --status-cyan-bg: #ecfeff;
+  --status-cyan-accent: #06b6d4;
+
+  --shadow-card: 0 8px 40px -10px rgba(24, 24, 24, 0.1);
+  --shadow-sidebar: 8px 0 24px -10px rgba(24, 24, 24, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(11, 102, 195, 0.2);
+  --shadow-focus-brand: 0 0 0 3px rgba(18, 145, 54, 0.2);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 15px;
+  --radius-xl: 24px;
+  --radius-2xl: 24px;
+
+  --icon-size-xl: 32px;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-family: var(--font-sans);
+  --font-size-sm: 14px;
+  --font-line-height-sm: 22px;
+  --font-letter-spacing-sm: 0;
+  --font-size-lg: 18px;
+  --font-line-height-lg: 26px;
+  --font-letter-spacing-lg: -0.25px;
+}

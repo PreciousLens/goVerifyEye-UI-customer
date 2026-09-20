@@ -1,0 +1,77 @@
+.customer-privacy {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #fff;
+  color: #122033;
+  font-family: var(--font-family, 'Instrument Sans', sans-serif);
+}
+
+.customer-privacy__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  border-bottom: 1px solid #ebebef;
+}
+
+.customer-privacy__brand {
+  display: flex;
+  text-decoration: none;
+}
+
+.customer-privacy__logo {
+  height: 36px;
+  width: auto;
+}
+
+.customer-privacy__back {
+  color: #0b66c3;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.customer-privacy__main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.customer-privacy__main h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: -1px;
+  color: #042b5c;
+}
+
+.customer-privacy__updated {
+  margin: 0 0 24px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.customer-privacy__main h2 {
+  margin: 28px 0 10px;
+  font-size: 18px;
+  color: #042b5c;
+}
+
+.customer-privacy__main p,
+.customer-privacy__main li {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #3d4f63;
+}
+
+.customer-privacy__main ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.customer-privacy__main a {
+  color: #0b66c3;
+  font-weight: 600;
+}
