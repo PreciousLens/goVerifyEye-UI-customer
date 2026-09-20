@@ -6,5 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5180,
+    proxy: {
+      '/api': {
+        target: 'https://goverifeye-api.onrender.com',
+        changeOrigin: true,
+      },
+    },
   },
 })
