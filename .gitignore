@@ -9,6 +9,7 @@ node_modules
 dist
 dist-ssr
 *.local
+!.env.local
 
 .vscode/*
 !.vscode/extensions.json
