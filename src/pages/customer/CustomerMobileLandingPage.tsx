@@ -20,6 +20,7 @@ import iconShield2 from '../../assets/customer/icon-shield-2.svg'
 import playstore from '../../assets/customer/playstore.png'
 import './CustomerMobileLandingPage.css'
 import { CustomerContactSupportModal } from './CustomerContactSupportModal'
+import { CustomerVerifyingOverlay } from './CustomerVerifyingOverlay'
 
 const STEPS = [
   {
@@ -90,11 +91,17 @@ export function CustomerMobileLandingPage() {
     }
 
     setSubmitting(true)
+    const startedAt = Date.now()
     try {
       await verifyApi.verify({
         verificationCode: digits,
         channel: 'manual',
       })
+      // Keep the Figma verifying card visible long enough to read.
+      const elapsed = Date.now() - startedAt
+      if (elapsed < 900) {
+        await new Promise((resolve) => window.setTimeout(resolve, 900 - elapsed))
+      }
       navigate('/verify/result', { replace: true })
     } catch (err) {
       setCodeError(toUserMessage(err))
@@ -105,6 +112,7 @@ export function CustomerMobileLandingPage() {
 
   return (
     <div className="customer-landing">
+      <CustomerVerifyingOverlay open={submitting} />
       <header className="customer-landing__header">
         <div className="customer-landing__header-inner">
           <Link to="/verify" className="customer-landing__brand" aria-label="goVerifEye home">

@@ -1,7 +1,7 @@
-import { USE_MOCK_API } from './config'
+import { API_BASE_URL, API_PREFIX, USE_MOCK_API } from './config'
 import { delay, http } from './http'
 
-export type VerifyOutcome = 'valid' | 'suspicious'
+export type VerifyOutcome = 'valid' | 'suspicious' | 'flagged'
 export type VerifyChannel = 'qr' | 'ocr' | 'manual'
 
 export type VerifyProductInfo = {
@@ -20,6 +20,8 @@ export type VerifySuccess = {
   verificationCount: number
   outcome: VerifyOutcome
   risk: 'low' | 'review_recommended' | string
+  explanation?: string
+  batchReference?: string
   product: VerifyProductInfo
 }
 
@@ -27,10 +29,22 @@ export type VerifyFailure = {
   valid: false
   status:
     | 'not_found'
+    | 'not_recognised'
+    | 'invalid'
     | 'inactive'
     | 'suspended'
+    | 'under_review'
+    | 'recalled'
+    | 'flagged'
     | 'product_unavailable'
     | string
+  verificationCount?: number
+  explanation?: string
+  guidance?: string
+  batchReference?: string
+  /** ISO date from recall.effectiveAt when status is recalled. */
+  recallEffectiveAt?: string
+  product?: VerifyProductInfo
 }
 
 export type VerifyResult = VerifySuccess | VerifyFailure
@@ -67,6 +81,19 @@ export type ConcernReceipt = {
   submittedAt: string
 }
 
+export type CustomerActivityGroup = {
+  date: string
+  area: string
+  checks: number
+}
+
+export type CustomerActivity = {
+  totalChecks: number
+  locations: number
+  groups: CustomerActivityGroup[]
+  capped: true
+}
+
 type CustomerCheckDto = {
   receipt: string
   code: string
@@ -80,33 +107,80 @@ type CustomerCheckDto = {
 const RESULT_KEY = 'goverifyeye.verifyResult'
 const CODE_KEY = 'goverifyeye.verifyCode'
 const RECEIPT_KEY = 'goverifyeye.verifyReceipt'
+const CHECKED_AT_KEY = 'goverifyeye.verifyCheckedAt'
 
 function normalizeCode(value: string): string {
   return value.replace(/\D/g, '').slice(0, 16)
 }
 
 function mapResult(raw: CustomerCheckDto['result']): VerifyResult {
+  const productRaw = raw.product
+  const product: VerifyProductInfo | undefined = productRaw
+    ? {
+        id: productRaw.id || '',
+        name: productRaw.name || 'Product',
+        description: productRaw.description || '',
+        form: productRaw.form || '',
+        manufacturer: productRaw.manufacturer || '',
+        imageUrl: productRaw.imageUrl ?? null,
+      }
+    : undefined
+
   if (!raw?.valid) {
+    const recall = (
+      raw as {
+        recall?: {
+          guidance?: string
+          reason?: string
+          effectiveAt?: string
+        }
+      }
+    ).recall
+    const batchRef = (raw as { batch?: { reference?: string } }).batch
+      ?.reference
     return {
       valid: false,
       status: raw?.status || 'not_found',
+      verificationCount: Number(
+        (raw as { verificationCount?: number }).verificationCount ?? 0,
+      ),
+      explanation:
+        typeof (raw as { explanation?: unknown }).explanation === 'string'
+          ? (raw as { explanation: string }).explanation
+          : recall?.reason,
+      guidance: recall?.guidance,
+      ...(recall?.effectiveAt ? { recallEffectiveAt: recall.effectiveAt } : {}),
+      ...(batchRef ? { batchReference: batchRef } : {}),
+      ...(product ? { product } : {}),
     }
   }
-  const product = raw.product
+
+  const batchRef = (raw as { batch?: { reference?: string } }).batch?.reference
   return {
     valid: true,
     status: raw.status || 'active',
-    firstVerification: Boolean(raw.firstVerification),
+    firstVerification:
+      Boolean(raw.firstVerification) || Number(raw.verificationCount ?? 0) === 1,
     verificationCount: Number(raw.verificationCount ?? 0),
-    outcome: raw.outcome === 'suspicious' ? 'suspicious' : 'valid',
+    outcome:
+      raw.outcome === 'flagged'
+        ? 'flagged'
+        : raw.outcome === 'suspicious'
+          ? 'suspicious'
+          : 'valid',
     risk: raw.risk || 'low',
-    product: {
-      id: product?.id || '',
-      name: product?.name || 'Product',
-      description: product?.description || '',
-      form: product?.form || '',
-      manufacturer: product?.manufacturer || '',
-      imageUrl: product?.imageUrl ?? null,
+    explanation:
+      typeof (raw as { explanation?: unknown }).explanation === 'string'
+        ? (raw as { explanation: string }).explanation
+        : undefined,
+    ...(batchRef ? { batchReference: batchRef } : {}),
+    product: product ?? {
+      id: '',
+      name: 'Product',
+      description: '',
+      form: '',
+      manufacturer: '',
+      imageUrl: null,
     },
   }
 }
@@ -122,6 +196,73 @@ function mockVerify(code: string): {
       result: { valid: false, status: 'not_found' },
     }
   }
+  if (code.endsWith('5')) {
+    return {
+      receipt,
+      result: { valid: false, status: 'invalid' },
+    }
+  }
+  if (code.endsWith('4')) {
+    return {
+      receipt,
+      result: {
+        valid: false,
+        status: 'recalled',
+        verificationCount: 9,
+        guidance: 'Contact the seller or manufacturer for return guidance.',
+        recallEffectiveAt: '2026-08-18',
+        product: {
+          id: 'mock-product',
+          name: 'Demo Product 500ml',
+          description: 'Mock product used when VITE_API_BASE_URL is empty.',
+          form: 'Liquid',
+          manufacturer: 'goVerifEye Demo Vendor Ltd',
+          imageUrl: null,
+        },
+        batchReference: 'BC-123464',
+      },
+    }
+  }
+  if (code.endsWith('7')) {
+    return {
+      receipt,
+      result: {
+        valid: false,
+        status: 'under_review',
+        verificationCount: 11,
+        explanation:
+          'unusual verification activity requires review. Ask the seller for another verifiable item or check again later.',
+        product: {
+          id: 'mock-product',
+          name: 'Demo Product 500ml',
+          description: 'Mock product used when VITE_API_BASE_URL is empty.',
+          form: 'Liquid',
+          manufacturer: 'goVerifEye Demo Vendor Ltd',
+          imageUrl: null,
+        },
+      },
+    }
+  }
+  if (code.endsWith('6')) {
+    return {
+      receipt,
+      result: {
+        valid: false,
+        status: 'flagged',
+        verificationCount: 11,
+        explanation:
+          'goVerifEye found serious conflicting use of this code. Review the verification details for the evidence available to shoppers.',
+        product: {
+          id: 'mock-product',
+          name: 'Demo Product 500ml',
+          description: 'Mock product used when VITE_API_BASE_URL is empty.',
+          form: 'Liquid',
+          manufacturer: 'goVerifEye Demo Vendor Ltd',
+          imageUrl: null,
+        },
+      },
+    }
+  }
   if (code.endsWith('9')) {
     return {
       receipt,
@@ -129,14 +270,37 @@ function mockVerify(code: string): {
         valid: true,
         status: 'active',
         firstVerification: false,
-        verificationCount: 6,
+        verificationCount: 28,
         outcome: 'suspicious',
         risk: 'review_recommended',
+        explanation:
+          'This code was checked in far-apart locations within a short period.',
         product: {
           id: 'mock-product',
           name: 'Demo Product 500ml',
           description: 'Mock product used when VITE_API_BASE_URL is empty.',
           form: 'Gel',
+          manufacturer: 'goVerifEye Demo Vendor Ltd',
+          imageUrl: null,
+        },
+      },
+    }
+  }
+  if (code.endsWith('8')) {
+    return {
+      receipt,
+      result: {
+        valid: true,
+        status: 'active',
+        firstVerification: false,
+        verificationCount: 12,
+        outcome: 'valid',
+        risk: 'low',
+        product: {
+          id: 'mock-product',
+          name: 'Demo Product 500ml',
+          description: 'Mock product used when VITE_API_BASE_URL is empty.',
+          form: 'Liquid',
           manufacturer: 'goVerifEye Demo Vendor Ltd',
           imageUrl: null,
         },
@@ -152,6 +316,7 @@ function mockVerify(code: string): {
       verificationCount: 1,
       outcome: 'valid',
       risk: 'low',
+      batchReference: 'BC-123464',
       product: {
         id: 'mock-product',
         name: 'Demo Product 500ml',
@@ -194,7 +359,12 @@ export const verifyApi = {
     if (USE_MOCK_API) {
       await delay(450)
       const mocked = mockVerify(verificationCode)
-      this.stashResult(mocked.result, verificationCode, mocked.receipt)
+      this.stashResult(
+        mocked.result,
+        verificationCode,
+        mocked.receipt,
+        new Date().toISOString(),
+      )
       return mocked.result
     }
 
@@ -212,7 +382,12 @@ export const verifyApi = {
         },
       })
       const result = mapResult(check.result)
-      this.stashResult(result, check.code || verificationCode, check.receipt)
+      this.stashResult(
+        result,
+        check.code || verificationCode,
+        check.receipt,
+        check.checkedAt,
+      )
       return result
     } catch (primaryError) {
       // Compatibility fallback for hosts that only expose the public verify route.
@@ -228,7 +403,7 @@ export const verifyApi = {
               : {}),
           },
         })
-        this.stashResult(legacy, verificationCode)
+        this.stashResult(legacy, verificationCode, null, new Date().toISOString())
         return legacy
       } catch {
         throw primaryError
@@ -263,7 +438,71 @@ export const verifyApi = {
     })
   },
 
-  stashResult(result: VerifyResult, code: string, receipt?: string | null) {
+  async activity(receipt: string): Promise<CustomerActivity> {
+    if (USE_MOCK_API) {
+      await delay(200)
+      const today = new Date()
+      const d1 = new Date(today)
+      d1.setDate(today.getDate() - 1)
+      const d2 = new Date(today)
+      d2.setDate(today.getDate() - 2)
+      const d5 = new Date(today)
+      d5.setDate(today.getDate() - 5)
+      return {
+        totalChecks: 24,
+        locations: 2,
+        capped: true,
+        groups: [
+          {
+            date: today.toISOString().slice(0, 10),
+            area: 'Lagos',
+            checks: 4,
+          },
+          {
+            date: today.toISOString().slice(0, 10),
+            area: 'Kano',
+            checks: 2,
+          },
+          {
+            date: d1.toISOString().slice(0, 10),
+            area: 'Abuja',
+            checks: 8,
+          },
+          {
+            date: d2.toISOString().slice(0, 10),
+            area: 'Lagos',
+            checks: 6,
+          },
+          {
+            date: d5.toISOString().slice(0, 10),
+            area: 'Lagos',
+            checks: 4,
+          },
+        ],
+      }
+    }
+    if (!/^[a-f0-9]{64}$/i.test(receipt)) {
+      return { totalChecks: 0, locations: 0, groups: [], capped: true }
+    }
+    return http<CustomerActivity>(
+      `/customer/checks/${encodeURIComponent(receipt)}/activity`,
+      { method: 'GET', auth: false },
+    )
+  },
+
+  shareUrl(receipt: string): string {
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : ''
+    const base = API_BASE_URL || origin
+    return `${base}${API_PREFIX}/customer/shared/${encodeURIComponent(receipt)}`
+  },
+
+  stashResult(
+    result: VerifyResult,
+    code: string,
+    receipt?: string | null,
+    checkedAt?: string | null,
+  ) {
     sessionStorage.setItem(RESULT_KEY, JSON.stringify(result))
     sessionStorage.setItem(CODE_KEY, code)
     if (receipt) {
@@ -271,23 +510,30 @@ export const verifyApi = {
     } else if (receipt === null) {
       sessionStorage.removeItem(RECEIPT_KEY)
     }
-    // undefined receipt → keep any existing receipt from /customer/checks
+    if (checkedAt) {
+      sessionStorage.setItem(CHECKED_AT_KEY, checkedAt)
+    } else if (checkedAt === null) {
+      sessionStorage.removeItem(CHECKED_AT_KEY)
+    }
   },
 
   readStashed(): {
     result: VerifyResult
     code: string
     receipt: string | null
+    checkedAt: string | null
   } | null {
     try {
       const raw = sessionStorage.getItem(RESULT_KEY)
       const code = sessionStorage.getItem(CODE_KEY) ?? ''
       const receipt = sessionStorage.getItem(RECEIPT_KEY)
+      const checkedAt = sessionStorage.getItem(CHECKED_AT_KEY)
       if (!raw) return null
       return {
         result: JSON.parse(raw) as VerifyResult,
         code,
         receipt,
+        checkedAt,
       }
     } catch {
       return null
@@ -298,5 +544,6 @@ export const verifyApi = {
     sessionStorage.removeItem(RESULT_KEY)
     sessionStorage.removeItem(CODE_KEY)
     sessionStorage.removeItem(RECEIPT_KEY)
+    sessionStorage.removeItem(CHECKED_AT_KEY)
   },
 }

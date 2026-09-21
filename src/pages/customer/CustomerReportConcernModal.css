@@ -1,0 +1,230 @@
+.customer-report {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.customer-report__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: rgba(4, 43, 92, 0.55);
+}
+
+.customer-report__modal {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 420px);
+  max-height: min(920px, calc(100dvh - 32px));
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fff;
+  color: #122033;
+  box-shadow: 0 24px 64px rgba(15, 40, 80, 0.28);
+}
+
+.customer-report__modal--submitted {
+  width: min(100%, 350px);
+  max-height: none;
+  border-radius: 15px;
+  border: 1px solid #ebebef;
+  box-shadow: 0 8px 40px -10px rgba(24, 24, 24, 0.1);
+}
+
+.customer-report__success {
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.customer-report__success-badge {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 15px;
+  border: 1px solid #f2f2f5;
+  background: #f9f9fb;
+  box-shadow:
+    1px 3px 8px rgba(11, 102, 195, 0.1),
+    3px 14px 14px rgba(11, 102, 195, 0.09);
+}
+
+.customer-report__title--center,
+.customer-report__copy--center {
+  text-align: center;
+}
+
+.customer-report__success .customer-report__title {
+  margin: 0;
+}
+
+.customer-report__success .customer-report__copy {
+  margin: -16px 0 0;
+}
+
+.customer-report__success .customer-report__submit {
+  margin-top: 0;
+}
+
+.customer-report__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 8px;
+}
+
+.customer-report__cancel {
+  border: 0;
+  background: transparent;
+  color: #0b66c3;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.customer-report__home {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #c5daf3;
+  background: #eef4fb;
+  color: #0b66c3;
+  text-decoration: none;
+}
+
+.customer-report__body {
+  display: grid;
+  gap: 16px;
+  padding: 8px 16px 16px;
+  overflow-y: auto;
+}
+
+.customer-report__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #122033;
+}
+
+.customer-report__copy {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: #667085;
+}
+
+.customer-report__reasons {
+  display: grid;
+  gap: 10px;
+}
+
+.customer-report__reason {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #122033;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.customer-report__reason--selected {
+  border-color: #0b66c3;
+  background: #eef4fb;
+}
+
+.customer-report__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid #98a2b3;
+  background: #fff;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.customer-report__reason--selected .customer-report__radio {
+  border-color: #0b66c3;
+  background: #0b66c3;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.customer-report__note {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  color: #122033;
+  background: #fff;
+}
+
+.customer-report__note::placeholder {
+  color: #98a2b3;
+}
+
+.customer-report__hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #667085;
+}
+
+.customer-report__footer {
+  flex-shrink: 0;
+  padding: 8px 16px 20px;
+  background: #fff;
+}
+
+.customer-report__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .customer-report {
+    padding: 0;
+    align-items: end;
+  }
+
+  .customer-report__modal {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 24px 24px 0 0;
+  }
+}

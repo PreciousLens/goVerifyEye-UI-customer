@@ -13,9 +13,12 @@ export {
 export type {
   ConcernInput,
   ConcernReason,
+  CustomerActivity,
+  CustomerActivityGroup,
   VerifyFailure,
   VerifyInput,
   VerifyOutcome,
+  VerifyProductInfo,
   VerifyResult,
   VerifySuccess,
 } from './verify'

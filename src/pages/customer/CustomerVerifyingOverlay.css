@@ -1,0 +1,118 @@
+.customer-verifying {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 43, 92, 0.28);
+  backdrop-filter: blur(2px);
+}
+
+.customer-verifying__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(100%, 600px);
+  min-height: 420px;
+  padding: 48px 32px 28px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid #f2f2f5;
+  box-shadow: 0 8px 40px -10px rgba(24, 24, 24, 0.1);
+  text-align: center;
+}
+
+.customer-verifying__loader {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: grid;
+  place-items: center;
+}
+
+.customer-verifying__glow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(11, 102, 195, 0.18), transparent 70%);
+}
+
+.customer-verifying__ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #edf4ff;
+  border-top-color: #0b66c3;
+  animation: customer-verifying-spin 0.9s linear infinite;
+}
+
+.customer-verifying__shield {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 42px;
+  background: #e5f6fd;
+  border: 1px solid #0b66c3;
+  box-shadow: 0 4px 6px rgba(11, 102, 195, 0.12);
+}
+
+.customer-verifying__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.25px;
+  color: #122033;
+}
+
+.customer-verifying__subtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: #60646c;
+}
+
+.customer-verifying__track {
+  width: 200px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #edf4ff;
+}
+
+.customer-verifying__fill {
+  height: 100%;
+  width: 40%;
+  border-radius: 2px;
+  background: #0b66c3;
+  animation: customer-verifying-bar 1.2s ease-in-out infinite;
+}
+
+.customer-verifying__hint {
+  margin: auto 0 0;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: #60646c;
+}
+
+@keyframes customer-verifying-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes customer-verifying-bar {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}

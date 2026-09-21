@@ -2,9 +2,16 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toUserMessage, verifyApi } from '../../api'
 import { CustomerVerifyShell } from './CustomerVerifyShell'
+import { CustomerVerifyingOverlay } from './CustomerVerifyingOverlay'
+
+function formatCodeDisplay(digits: string): string {
+  const groups = digits.match(/.{1,4}/g) ?? []
+  return groups.join('-')
+}
 
 /**
- * Customer — enter 16-digit verification code manually.
+ * Customer — enter 16-digit verification code (desktop + mobile).
+ * Desktop counterpart: Figma “Desktop - Enter code”.
  */
 export function CustomerManualVerifyPage() {
   const navigate = useNavigate()
@@ -15,8 +22,9 @@ export function CustomerManualVerifyPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const normalized = verifyApi.normalizeCode(code)
-  const canSubmit = verifyApi.isCompleteCode(normalized) && !submitting
+  const digits = verifyApi.normalizeCode(code)
+  const display = formatCodeDisplay(digits)
+  const canSubmit = verifyApi.isCompleteCode(digits) && !submitting
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -25,7 +33,7 @@ export function CustomerManualVerifyPage() {
     setError('')
     try {
       await verifyApi.verify({
-        verificationCode: normalized,
+        verificationCode: digits,
         location: location.trim() || undefined,
         channel: 'manual',
       })
@@ -39,10 +47,13 @@ export function CustomerManualVerifyPage() {
 
   return (
     <CustomerVerifyShell title="Enter code" backTo="/verify">
-      <form className="customer-verify__card" onSubmit={handleSubmit} noValidate>
+      <CustomerVerifyingOverlay open={submitting} />
+      <form className="customer-verify__card customer-manual" onSubmit={handleSubmit} noValidate>
+        <span className="customer-manual__badge">SECURED VERIFICATION</span>
         <h1 className="customer-verify__heading">Enter verification code</h1>
         <p className="customer-verify__copy">
           Type the 16-digit code printed under the QR on your product package.
+          Protect your purchase with enterprise-grade blockchain security.
         </p>
 
         <label className="customer-verify__label">
@@ -52,21 +63,20 @@ export function CustomerManualVerifyPage() {
             inputMode="numeric"
             autoComplete="one-time-code"
             name="verificationCode"
-            placeholder="•••• •••• •••• ••••"
-            value={normalized}
+            placeholder="1256-8907-6543"
+            value={display}
             onChange={(event) => setCode(event.target.value)}
-            maxLength={16}
+            maxLength={19}
             required
             autoFocus
           />
         </label>
-        <p className="customer-verify__hint">{normalized.length}/16 digits</p>
+        <p className="customer-verify__hint">{digits.length}/16 digits</p>
 
         <label className="customer-verify__label">
           Location (optional)
           <input
-            className="customer-verify__input"
-            style={{ letterSpacing: 'normal', fontSize: 15, fontWeight: 500 }}
+            className="customer-verify__input customer-verify__input--text"
             name="location"
             placeholder="e.g. Lagos, Nigeria"
             value={location}

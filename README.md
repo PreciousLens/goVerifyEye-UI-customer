@@ -22,7 +22,7 @@ cp .env.example .env.local
 #   VITE_API_BASE_URL=https://goverifeye-api.onrender.com
 #   VITE_USE_MOCK_API=false
 npm install
-npm run dev          # http://localhost:5180
+npm run dev          # http://localhost:5173
 npm run dev:live     # force Render API
 npm run build        # → dist/
 npm run preview
