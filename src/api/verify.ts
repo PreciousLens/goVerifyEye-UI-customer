@@ -1,5 +1,6 @@
 import { API_BASE_URL, API_PREFIX, USE_MOCK_API } from './config'
 import { delay, http } from './http'
+import { customerAccountApi } from './customerAccount'
 
 export type VerifyOutcome = 'valid' | 'suspicious' | 'flagged'
 export type VerifyChannel = 'qr' | 'ocr' | 'manual'
@@ -369,9 +370,13 @@ export const verifyApi = {
     }
 
     try {
+      const shopperToken = customerAccountApi.session()?.accessToken
       const check = await http<CustomerCheckDto>('/customer/checks', {
         method: 'POST',
         auth: false,
+        headers: shopperToken
+          ? { Authorization: `Bearer ${shopperToken}` }
+          : undefined,
         body: {
           requestId: crypto.randomUUID(),
           verificationCode,

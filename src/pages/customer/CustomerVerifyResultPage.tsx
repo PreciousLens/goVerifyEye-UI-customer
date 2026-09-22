@@ -1,4 +1,9 @@
-import { useMemo, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {
   CONCERN_REASONS,
@@ -9,7 +14,36 @@ import {
   type VerifyProductInfo,
   type VerifySuccess,
 } from '../../api'
-import { CustomerVerifyShell } from './CustomerVerifyShell'
+import './CustomerVerifyShell.css'
+
+/** White result card centered over the landing page (Figma desktop). */
+function ResultOverlay({
+  children,
+  onDismiss,
+}: {
+  children: ReactNode
+  onDismiss: () => void
+}) {
+  useEffect(() => {
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [])
+
+  return (
+    <div className="customer-result-overlay">
+      <button
+        type="button"
+        className="customer-result-overlay__backdrop"
+        aria-label="Close result"
+        onClick={onDismiss}
+      />
+      {children}
+    </div>
+  )
+}
 
 function ShareIcon() {
   return (
@@ -203,6 +237,11 @@ export function CustomerVerifyResultPage() {
     void shareResult()
   }
 
+  function dismissResult() {
+    verifyApi.clearStashed()
+    navigate('/verify', { replace: true })
+  }
+
   const concernForm = reportOpen ? (
     <ConcernForm
       reason={reason}
@@ -227,8 +266,13 @@ export function CustomerVerifyResultPage() {
       'unusual verification activity requires review. Ask the seller for another verifiable item or check again later.'
 
     return (
-      <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
-        <article className="customer-result customer-result--review">
+      <ResultOverlay onDismiss={dismissResult}>
+        <article
+          className="customer-result customer-result--review"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="customer-result-title"
+        >
           <ResultHeader onShare={share} />
 
           <div className="customer-result__banner customer-result__banner--review">
@@ -241,7 +285,9 @@ export function CustomerVerifyResultPage() {
             <span className="customer-result__badge customer-result__badge--review">
               Under review
             </span>
-            <h1 className="customer-result__title">This code is under review</h1>
+            <h1 id="customer-result-title" className="customer-result__title">
+              This code is under review
+            </h1>
             <p className="customer-result__body">
               goVerifEye cannot provide a current verification result for this code.
             </p>
@@ -288,7 +334,7 @@ export function CustomerVerifyResultPage() {
 
           {concernForm}
         </article>
-      </CustomerVerifyShell>
+      </ResultOverlay>
     )
   }
 
@@ -312,7 +358,7 @@ export function CustomerVerifyResultPage() {
       'goVerifEye found serious conflicting use of this code. Review the verification details for the evidence available to shoppers.'
 
     return (
-      <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
+      <ResultOverlay onDismiss={dismissResult}>
         <article className="customer-result customer-result--flagged">
           <ResultHeader onShare={share} />
 
@@ -372,7 +418,7 @@ export function CustomerVerifyResultPage() {
 
           {concernForm}
         </article>
-      </CustomerVerifyShell>
+      </ResultOverlay>
     )
   }
 
@@ -385,7 +431,7 @@ export function CustomerVerifyResultPage() {
       'Contact the seller or manufacturer for return guidance.'
 
     return (
-      <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
+      <ResultOverlay onDismiss={dismissResult}>
         <article className="customer-result customer-result--recall">
           <ResultHeader onShare={share} />
 
@@ -454,7 +500,7 @@ export function CustomerVerifyResultPage() {
 
           {concernForm}
         </article>
-      </CustomerVerifyShell>
+      </ResultOverlay>
     )
   }
 
@@ -464,7 +510,7 @@ export function CustomerVerifyResultPage() {
     (result.status === 'not_found' || result.status === 'not_recognised')
   ) {
     return (
-      <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
+      <ResultOverlay onDismiss={dismissResult}>
         <article className="customer-result customer-result--unrecognized">
           <ResultHeader onShare={share} />
 
@@ -518,7 +564,7 @@ export function CustomerVerifyResultPage() {
 
           {concernForm}
         </article>
-      </CustomerVerifyShell>
+      </ResultOverlay>
     )
   }
 
@@ -532,7 +578,7 @@ export function CustomerVerifyResultPage() {
       fail.status === 'product_unavailable'
 
     return (
-      <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
+      <ResultOverlay onDismiss={dismissResult}>
         <article className="customer-result customer-result--invalid">
           <ResultHeader onShare={share} />
 
@@ -596,7 +642,7 @@ export function CustomerVerifyResultPage() {
 
           {concernForm}
         </article>
-      </CustomerVerifyShell>
+      </ResultOverlay>
     )
   }
 
@@ -614,7 +660,7 @@ export function CustomerVerifyResultPage() {
     'This code has an unusual verification pattern. Review the registered product details before deciding what to do.'
 
   return (
-    <CustomerVerifyShell title="Result" backTo="/verify" variant="result">
+    <ResultOverlay onDismiss={dismissResult}>
       <article
         className={`customer-result${
           suspicious
@@ -623,6 +669,9 @@ export function CustomerVerifyResultPage() {
               ? ' customer-result--first'
               : ' customer-result--repeat'
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customer-result-title"
       >
         <ResultHeader onShare={share} />
 
@@ -646,7 +695,7 @@ export function CustomerVerifyResultPage() {
           >
             {suspicious ? 'Caution' : 'Verified by goVerifEye'}
           </span>
-          <h1 className="customer-result__title">
+          <h1 id="customer-result-title" className="customer-result__title">
             {suspicious ? 'Unusual verification activity' : 'Code check successful'}
           </h1>
           <p className="customer-result__body">
@@ -719,7 +768,7 @@ export function CustomerVerifyResultPage() {
 
         {concernForm}
       </article>
-    </CustomerVerifyShell>
+    </ResultOverlay>
   )
 }
 

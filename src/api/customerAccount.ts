@@ -47,6 +47,14 @@ function saveSession(session: CustomerSession | null) {
   else localStorage.removeItem(SESSION_KEY)
 }
 
+function updateLocalShopper(partial: Partial<CustomerShopper>): CustomerShopper | null {
+  const session = readSession()
+  if (!session) return null
+  const shopper = { ...session.shopper, ...partial }
+  saveSession({ ...session, shopper })
+  return shopper
+}
+
 async function request<T>(path: string, options: RequestInit = {}, authenticated = false): Promise<T> {
   if (!API_BASE_URL) throw new Error('The customer account service is unavailable.')
   const session = readSession()
@@ -71,6 +79,25 @@ async function request<T>(path: string, options: RequestInit = {}, authenticated
   return data as T
 }
 
+export type CustomerCheckHistoryItem = {
+  receipt: string
+  code: string
+  channel: string
+  checkedAt: string
+  result: {
+    valid: boolean
+    status: string
+    outcome?: string
+    product?: { name?: string; manufacturer?: string; imageUrl?: string | null }
+  }
+}
+
+export type CustomerCheckHistory = {
+  items: CustomerCheckHistoryItem[]
+  page: number
+  hasMore: boolean
+}
+
 export const customerAccountApi = {
   session: readSession,
   async signIn(email: string, password: string) {
@@ -81,7 +108,47 @@ export const customerAccountApi = {
     saveSession(session)
     return session.shopper
   },
+  async requestRegistration(email: string) {
+    return request<{ challengeId: string; expiresInSeconds: number; message: string }>(
+      '/customer/auth/registration/challenge',
+      { method: 'POST', body: JSON.stringify({ email: email.trim().toLowerCase() }) },
+    )
+  },
+  async verifyRegistration(challengeId: string, code: string) {
+    return request<{ registrationToken: string; expiresInSeconds: number }>(
+      '/customer/auth/registration/verify',
+      { method: 'POST', body: JSON.stringify({ challengeId, code }) },
+    )
+  },
+  async completeRegistration(registrationToken: string, displayName: string, password: string) {
+    const session = await request<CustomerSession>('/customer/auth/registration/complete', {
+      method: 'POST',
+      body: JSON.stringify({
+        registrationToken,
+        displayName: displayName.trim(),
+        password,
+      }),
+    })
+    if (!/^[a-f0-9]{64}$/.test(session.accessToken) || !session.shopper?.id) {
+      throw new Error('The server returned an invalid customer session.')
+    }
+    saveSession(session)
+    return session.shopper
+  },
   me: () => request<CustomerShopper>('/customer/auth/me', {}, true),
+  history: (page = 1) =>
+    request<CustomerCheckHistory>(`/customer/history?page=${page}`, {}, true),
+  /** Local-only until a shopper profile PATCH exists on the API. */
+  updateLocalProfile(partial: Partial<CustomerShopper>) {
+    return updateLocalShopper(partial)
+  },
+  async changePassword(currentPassword: string, newPassword: string) {
+    // Prefer a dedicated change-password route when the API exposes one.
+    return request<{ ok: true }>('/customer/auth/password/change', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }, true)
+  },
   async signOut() {
     try { await request('/customer/auth/logout', { method: 'POST' }, true) } finally { saveSession(null) }
   },

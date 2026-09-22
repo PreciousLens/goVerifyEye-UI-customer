@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toUserMessage, verifyApi, APP_STORE_URL, PLAY_STORE_URL } from '../../api'
+import { customerAccountApi } from '../../api/customerAccount'
 import { BrandMark } from '../../components/BrandMark'
 import {
   ArrowRightIcon,
   FlagIcon,
   InfoCircleIcon,
   MenuIcon,
+  PersonIcon,
   ScanIcon,
 } from '../../components/icons'
 import heroScanJpg from '../../assets/customer/hero-scan.jpg'
@@ -69,10 +71,36 @@ export function CustomerMobileLandingPage() {
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [codeError, setCodeError] = useState('')
+  const [shopperName, setShopperName] = useState(() => {
+    const name = customerAccountApi.session()?.shopper?.displayName?.trim()
+    return name || ''
+  })
 
   const digits = verifyApi.normalizeCode(code)
   const displayCode = formatCodeDisplay(digits)
   const canSubmit = digits.length > 0 && !submitting
+  const profileLabel = shopperName || 'Sign in'
+
+  useEffect(() => {
+    const session = customerAccountApi.session()
+    if (!session) {
+      setShopperName('')
+      return
+    }
+    let alive = true
+    void customerAccountApi
+      .me()
+      .then((shopper) => {
+        if (!alive) return
+        setShopperName(shopper.displayName?.trim() || shopper.email || '')
+      })
+      .catch(() => {
+        if (alive) setShopperName('')
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!manualOpen) return
@@ -129,7 +157,22 @@ export function CustomerMobileLandingPage() {
           </nav>
 
           <Link
-            to="/verify/account"
+            to={shopperName ? '/verify/account' : '/verify/account?tab=login'}
+            className="customer-landing__profile"
+            aria-label={
+              shopperName
+                ? `Shopper account, ${shopperName}`
+                : 'Sign in to shopper account'
+            }
+          >
+            <span className="customer-landing__profile-avatar" aria-hidden="true">
+              <PersonIcon size={18} />
+            </span>
+            <span className="customer-landing__profile-name">{profileLabel}</span>
+          </Link>
+
+          <Link
+            to="/verify/account?tab=login"
             className="customer-landing__menu"
             aria-label="Shopper account"
           >

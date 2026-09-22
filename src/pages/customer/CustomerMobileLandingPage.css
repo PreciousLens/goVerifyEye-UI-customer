@@ -11,6 +11,17 @@
   scroll-behavior: smooth;
 }
 
+.customer-landing-host--covered {
+  position: relative;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.customer-landing-host--covered .customer-landing {
+  pointer-events: none;
+  user-select: none;
+}
+
 .customer-landing__header {
   position: sticky;
   top: 0;
@@ -81,6 +92,43 @@
 
 .customer-landing__nav-cta:hover {
   background: #0958a8;
+}
+
+.customer-landing__profile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 9999px;
+  color: #122033;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.customer-landing__profile:hover {
+  background: #f2f7fc;
+}
+
+.customer-landing__profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: #e5f0fb;
+  color: #0b66c3;
+}
+
+.customer-landing__profile-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #122033;
 }
 
 .customer-landing__menu {
@@ -711,6 +759,10 @@
   .customer-landing__nav {
     display: flex;
     margin-left: auto;
+  }
+
+  .customer-landing__profile {
+    display: inline-flex;
   }
 
   .customer-landing__menu {
